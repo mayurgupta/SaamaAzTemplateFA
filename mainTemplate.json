@@ -2,10 +2,46 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+      "vmName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual Machine Name."
+      }
+    },
     "adminUsername": {
       "type": "string",
       "metadata": {
         "description": "User name for the Virtual Machine."
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "Password for the Virtual Machine."
+      }
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual Network Name."
+      }
+    },
+    "subnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet Name"
+      }
+    },
+    "subnetPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "subnet prefix in CIDR format. Ex. 10.0.0.0/24"
+      }
+    },
+    "addressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "address prefix in CIDR format. Ex. 10.0.0.0/16"
       }
     },
     "vmSize": {
@@ -15,34 +51,23 @@
         "description": "Virtual Machine size selection"
       }
     },
-    "vmName": {
+    "storageAccountName": {
       "type": "string",
       "metadata": {
-        "description": "Virtual Machine Name."
+        "description": "Unique DNS Name for the Storage Account where the Virtual Machine's disks will be placed."
       }
     },
-    "virtualNetworkName": {
+    "storageAccountType": {
       "type": "string",
+      "defaultValue": "Standard_LRS",
       "metadata": {
-        "description": "Virtual Network Name."
+        "description": "Storage Account Type."
       }
     },
     "publicIPAddressName": {
       "type": "string",
       "metadata": {
         "description": "Public name for the IP Address."
-      }
-    },
-    "vmStorageAccountContainerName": {
-      "type": "string",
-      "metadata": {
-        "description": "Container Name of Storage Account."
-      }
-    },
-    "StorageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "Unique DNS Name for the Storage Account where the Virtual Machine's disks will be placed."
       }
     },
     "publicIPAddressType": {
@@ -56,47 +81,10 @@
         "description": "Type of public IP address"
       }
     },
-    "StorageAccountType": {
-      "type": "string",
-      "defaultValue": "Standard_LRS",
-      "metadata": {
-        "description": "Storage Account Type."
-      }
-    },
     "location": {
       "type": "string",
       "metadata": {
         "description": "location"
-      }
-    },
-    "nicName": {
-      "type": "string",
-      "metadata": {
-        "description": "name of network interface card"
-      }
-    },
-    "subnetName": {
-      "type": "string",
-      "metadata": {
-        "description": "Subnet Name"
-      }
-    },
-    "addressPrefix": {
-      "type": "string",
-      "metadata": {
-        "description": "address prefix in CIDR format. Ex. 10.0.0.0/16"
-      }
-    },
-    "subnetPrefix": {
-      "type": "string",
-      "metadata": {
-        "description": "subnet prefix in CIDR format. Ex. 10.0.0.0/24"
-      }
-    },
-    "adminPassword": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Password for the Virtual Machine."
       }
     },
     "dnsLabelPrefix": {
@@ -107,20 +95,19 @@
     }
   },
   "variables": {
-    "storageAccountName": "[parameters('StorageAccountName')]",
+    "storageAccountName": "[parameters('storageAccountName')]",
     "location": "[resourceGroup().location]",
-    "dataDisk1VhdName": "datadisk1--------------remove-------------",
     "imagePublisher": "saama",
     "imageOffer": "insurancefraudanalytics",
     "OSDiskName": "fadisk",
-    "nicName": "[parameters('nicName')]",
+    "nicName": "[concat('fanic',parameters('vmName'))]",
     "addressPrefix": "[parameters('addressPrefix')]",
     "subnetName": "[parameters('subnetName')]",
     "subnetPrefix": "[parameters('subnetPrefix')]",
-    "StorageAccountType": "[parameters('StorageAccountType')]",
+    "StorageAccountType": "[parameters('storageAccountType')]",
     "publicIPAddressName": "[parameters('publicIPAddressName')]",
     "publicIPAddressType": "[parameters('publicIPAddressType')]",
-    "vmStorageAccountContainerName": "[parameters('vmStorageAccountContainerName')]",
+    "vmStorageAccountContainerName": "[concat('facontainer',parameters('vmName'))]",
     "vmName": "[parameters('vmName')]",
     "vmSize": "[parameters('vmSize')]",
     "virtualNetworkName": "[parameters('virtualNetworkName')]",
@@ -202,6 +189,11 @@
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[variables('vmName')]",
       "location": "[variables('location')]",
+      "plan": {
+        "name": "insurancefraud",
+        "publisher": "saama",
+        "product": "[variables('imageOffer')]"
+      },
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
@@ -219,7 +211,7 @@
           "imageReference": {
             "publisher": "[variables('imagePublisher')]",
             "offer": "[variables('imageOffer')]",
-            "sku": "INSURANCEFRAUD",
+            "sku": "insurancefraud",
             "version": "latest"
           },
           "osDisk": {
