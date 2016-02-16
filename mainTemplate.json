@@ -212,6 +212,20 @@
                             "priority": 1300,
                             "direction": "Inbound"
                         }
+                    },
+                    {
+                        "name": "apprule",
+                        "properties": {
+                            "description": "tomcat apprule",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "8081",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1400,
+                            "direction": "Inbound"
+                        }
                     }
                 ]
             }
